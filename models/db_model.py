@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+
+def J(txt):
+    return txt
+
+db.define_table('cis_typ_prvku',
+    Field('typ', length=96, requires=IS_NOT_EMPTY(),
+          label=J('typ prvku'), comment=J('uveď typ (skupinu) prvků, používanou ve výrobě')),
+    Field('mnozne', length=96, requires=IS_NOT_EMPTY(),
+          label=J('typ - množné číslo'), comment=J('typ (skupina) jako množné číslo')),
+    Field('pocet_zadat', 'boolean', default=False,
+          label=J('zadávat počet'), comment=J('zadávat počet prvků při zadání výrobku? pokud ne, vezme se =1 bez možnosti editace')),
+    Field('vzpera', 'boolean', default=False,
+          label=J('vzpěra?'), comment=J('zda se u prvku zobrazí výběr směru: vodorovně/svisle')),
+    Field('cena_fix', 'boolean', default=False,
+          label=J('povolit fixní cenu'), comment=J('zadávat u těchto prvků cenu (složku ceny) nezávislou na rozměrech?')),
+    Field('cena_m', 'boolean', default=False,
+          label=J('povolit cenu za obvod'), comment=J('lineární prvek; zadávat cenu (složku ceny) za [m] délky (u vzpěr) nebo obvodu (u ostatních)?')),
+    Field('cena_m2', 'boolean', default=False,
+          label=J('povolit cenu za plochu'), comment=J('plošný prvek; zadávat cenu (složku ceny) za [m2] plochy?')),
+    Field('okraje', 'boolean', default=True,
+          label=J('rozměr včetně okrajů?'), comment=J('při výpočtu rozměru připočíst i okraje?')),
+    Field('prorez_default', 'integer', default=0,
+          label=J('odpad/prořez [%]'), comment=J('navýšit rozměr o zadané [%] odpadu/prořezu (není-li u jednotlivého prvku uvedeno jinak)')),
+    Field('zadat_prorez', 'boolean', default=False,
+          label=J('korigovat [%] odpadu?'), comment=J('zda bude možnost zadat odpad/prořez v číselníku prvků')),
+    Field('zadat_delku', 'boolean', default=False,
+          label=J('délka [cm]'), comment=J('možnost zadat dodávanou délku (omezení rozměru) v číselníku prvků')),
+    Field('zadat_sirku', 'boolean', default=False,
+          label=J('šířka [cm]'), comment=J('možnost zadat dodávanou šířku (omezení druhého rozměru) v číselníku prvků')),
+    singular=J('typ prvku'), plural=J('typy prvků'),
+    format='%(typ)s'
+    )
+
+db.define_table('vyrobce',
+    Field('cis_typ_prvku_id', db.cis_typ_prvku, readable=False, writable=False),
+    Field('vyrobce', length=96, requires=IS_NOT_EMPTY(),
+          label=J('výrobce')),
+    Field('aktivni', 'boolean', default=True, label=J('aktivní?'), comment=J('zobrazovat/nabízet k výběru')),
+    singular=J('výrobce'), plural=J('výrobci'),
+    format='%(vyrobce)s'
+    )
+
+db.define_table('cis_prvek',
+    Field('cis_typ_prvku_id', db.cis_typ_prvku, readable=False, writable=False),
+    Field('vyrobce_id', db.vyrobce, label=J('výrobce')),
+    Field('nazev', length=96, requires=IS_NOT_EMPTY(),
+          label=J('název prvku'), comment=J('uveď vlastní název pro tento prvek')),
+    Field('aktivni', 'boolean', default=True, label=J('aktivní?'), comment=J('zobrazovat/nabízet k výběru')),
+    Field('cena_fix', 'decimal[10,2]', default=0.0, readable=False, writable=False,
+          label=J('cena (fixní)'), comment=J('cena (nebo složka ceny) nezávislá na rozměru')),
+    Field('cena_m', 'decimal[10,2]', default=0.0, readable=False, writable=False,
+          label=J('cena za obvod'), comment=J('cenu (nebo složka ceny) za [m] délky (u vzpěr) nebo obvodu (u ostatních)')),
+    Field('cena_m2', 'decimal[10,2]', default=0.0, readable=False, writable=False,
+          label=J('cena za plochu'), comment=J('cena (složku ceny) za [m2] plochy')),
+    Field('delka', 'integer', default=None, readable=False, writable=False,
+          label=J('dodávaná délka [cm]'), comment=J('omezení max. délky, zadej v [cm]')),
+    Field('sirka', 'integer', default=None, readable=False, writable=False,
+          label=J('dodávaná šířka [cm]'), comment=J('omezení max. šířky, zadej v [cm]')),
+    Field('prorez', 'integer', readable=False, writable=False,
+          label=J('odpad/prořez [%]'), comment=J('navýšit rozměr o zadané [%] odpadu/prořezu (prázdné: podle univerzál nastavení, 0: nenavyšovat)')),
+    Field('cena_vyrobni', 'decimal[10,2]', default=None,
+          label=J('výrobní cena'), comment=J('výrobní cena (u lineárních/plošných prvků za dodávaný (max) rozměr)')),
+    Field('cena_vyrobni_1', 'decimal[10,2]', default=None,
+          label=J('výr.cena jednotková'), comment=J('výrobní cena (u lineárních/plošných prvků na jednotku rozměru)')),
+    Field('rabat', 'decimal[10,2]', default=None, readable=False, writable=False,
+          label=J('náš rabat [%]'), comment=J('rabat v [%]')),
+    singular=J('prvek'), plural=J('prvky'),
+    format='%(nazev)s'
+    )
